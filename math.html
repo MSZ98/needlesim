@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wyprowadzenie transmitancji silnika DC</title>
+
+  <!-- Renderowanie LaTeX (wzory) -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)'], ['$', '$']], displayMath: [['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b0c10; --card:#11131a; --text:#e8e8ea; --muted:#b6b6be;
+      --accent:#7aa2f7; --border:#24273a;
+    }
+    body{
+      margin:0; padding:32px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.55;
+    }
+    main{ max-width: 920px; margin: 0 auto; }
+    header{ margin-bottom: 18px; }
+    h1{ font-size: 28px; margin: 0 0 6px; }
+    .subtitle{ color: var(--muted); margin:0; }
+    section{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 18px;
+      margin: 14px 0;
+    }
+    h2{ font-size: 18px; margin: 0 0 10px; color: var(--accent); }
+    p{ margin: 10px 0; }
+    ul{ margin: 8px 0 0 18px; }
+    .eq{ margin: 10px 0; }
+    .note{
+      border-left: 4px solid var(--accent);
+      padding: 10px 12px;
+      color: var(--muted);
+      background: rgba(122,162,247,0.08);
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    .boxed{
+      display: inline-block;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      margin: 8px 0;
+    }
+    code{
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header>
+      <h1>Wyprowadzenie transmitancji silnika DC</h1>
+      <p class="subtitle">Wejście: <code>U</code>, wyjście: <code>ω</code> (oraz wariant dla kąta <code>θ</code>).</p>
+    </header>
+
+    <section>
+      <h2>1) Równania modelu</h2>
+
+      <p><strong>Równanie elektryczne:</strong></p>
+      <div class="eq">\[
+        U = R i + L \dot{i} + c\,\omega
+      \]</div>
+
+      <p><strong>Równanie mechaniczne:</strong></p>
+      <div class="eq">\[
+        J \dot{\omega} = k i - B\omega - M_o
+      \]</div>
+
+      <p>Do wyznaczenia transmitancji przyjmujemy brak momentu obciążenia:</p>
+      <div class="eq">\[
+        M_o = 0
+      \]</div>
+    </section>
+
+    <section>
+      <h2>2) Transformata Laplace’a</h2>
+      <p>Przechodzimy do dziedziny operatorowej (warunki początkowe równe zero):</p>
+
+      <div class="eq">\[
+        U(s) = (R + Ls)\,I(s) + c\,\Omega(s)
+      \]</div>
+
+      <div class="eq">\[
+        Js\,\Omega(s) = k\,I(s) - B\,\Omega(s)
+      \]</div>
+    </section>
+
+    <section>
+      <h2>3) Eliminacja prądu</h2>
+
+      <p>Z równania mechanicznego:</p>
+      <div class="eq">\[
+        k\,I(s) = (Js + B)\,\Omega(s)
+      \]</div>
+
+      <div class="eq">\[
+        I(s) = \frac{(Js + B)}{k}\,\Omega(s)
+      \]</div>
+
+      <p>Podstawiamy do równania elektrycznego:</p>
+      <div class="eq">\[
+        U(s) = (R + Ls)\frac{(Js + B)}{k}\Omega(s) + c\,\Omega(s)
+      \]</div>
+
+      <div class="eq">\[
+        U(s) = \left(\frac{(R + Ls)(Js + B)}{k} + c\right)\Omega(s)
+      \]</div>
+    </section>
+
+    <section>
+      <h2>4) Transmitancja prędkości</h2>
+
+      <p>Stąd:</p>
+      <div class="eq">\[
+        \frac{\Omega(s)}{U(s)}=
+        \frac{k}{(Ls + R)(Js + B) + kc}
+      \]</div>
+
+      <p>Rozwijamy mianownik:</p>
+      <div class="eq">\[
+        (Ls+R)(Js+B)+kc = LJ\,s^2 + (LB+RJ)s + (RB+kc)
+      \]</div>
+
+      <div class="boxed">\[
+        \boxed{
+        \frac{\Omega(s)}{U(s)}=
+        \frac{k}{LJ\,s^2 + (LB + RJ)s + (RB + kc)}
+        }
+      \]</div>
+
+      <div class="note">
+        Układ dla prędkości <strong>jest II rzędu</strong> i <strong>bez astatyzmu</strong> (brak całkowania w torze).
+      </div>
+    </section>
+
+    <section>
+      <h2>5) Transmitancja położenia kątowego</h2>
+
+      <p>Jeśli wyjściem jest kąt wału <code>θ</code>, to:</p>
+      <div class="eq">\[
+        \omega = \dot{\theta}
+        \quad\Rightarrow\quad
+        \Theta(s)=\frac{1}{s}\Omega(s)
+      \]</div>
+
+      <p>Zatem:</p>
+      <div class="boxed">\[
+        \boxed{
+        \frac{\Theta(s)}{U(s)}=
+        \frac{1}{s}\frac{\Omega(s)}{U(s)}=
+        \frac{k}{
+          s\left(LJ\,s^2 + (LB + RJ)s + (RB + kc)\right)
+        }
+        }
+      \]</div>
+
+      <div class="note">
+        Układ dla położenia <strong>jest III rzędu</strong> i ma <strong>astatyzm I rzędu</strong> (jedno całkowanie: <code>1/s</code>).
+      </div>
+    </section>
+  </main>
+</body>
+</html>

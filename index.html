@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>NeedleSim</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="log-panel-container">
+        <button id="show-log-toggle" class="log-toggle-btn">
+            <span class="arrow">→</span>
+        </button>
+        <div id="log-panel">
+            <div class="log-controls">
+                <label style="flex: 1;">
+                    <input type="checkbox" id="autoscroll-checkbox" checked>
+                    Autoscroll
+                </label>
+                <button id="save-log-btn" class="logbar-btn">Save</button>
+                <button id="copy-log-btn" class="logbar-btn">Copy</button>
+                <button id="clear-log-btn" class="logbar-btn">Clear</button>
+            </div>
+            <textarea id="log-textarea"></textarea>
+        </div>
+    </div>
+
+    <div id="params-panel-container">
+        <button id="show-params-toggle" class="params-toggle-btn">
+            <span class="arrow">←</span>
+        </button>
+        <div id="params-panel">
+            <div class="params-formula" aria-label="Transmitancja">
+                <p class="params-formula-main">G<sub>o</sub>(s) = <span class="params-frac"><span class="params-num">k</span><span class="params-den">s(a·s² + b·s + c)</span></span></p>
+            </div>
+            <div class="params-coeffs">
+                <label><span class="params-label">k</span><input type="number" id="param-k" step="any"></label>
+                <label><span class="params-label">a</span><input type="number" id="param-a" step="any"></label>
+                <label><span class="params-label">b</span><input type="number" id="param-b" step="any"></label>
+                <label><span class="params-label">c</span><input type="number" id="param-c" step="any"></label>
+                <label><span class="params-label"><span class="params-var">U<sub>min</sub></span></span><input type="number" id="param-Umin" step="any"></label>
+                <label><span class="params-label"><span class="params-var">U<sub>max</sub></span></span><input type="number" id="param-Umax" step="any"></label>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="switch-label" style="font-size: 12px; min-width: 100px; text-align: right;">Gravity</div>
+                    <div class="toggle-switch" id="needle-load-toggle"></div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="switch-label" style="font-size: 12px; min-width: 100px; text-align: right;">Clamping</div>
+                    <div class="toggle-switch" id="clamping-toggle"></div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="switch-label" style="font-size: 12px; min-width: 100px; text-align: right;">Saturation</div>
+                    <div class="toggle-switch" id="saturation-toggle"></div>
+                    <input type="number" id="integral-saturation-value" step="any" style="padding: 4px; width: 80px; margin-left: 8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div id="needle-container">
+            <div class="knob-outer">
+                <div id="needle-group" class="knob-inner">
+                    <svg class="knob-punch" viewBox="0 0 20 115" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="punchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#d0d0d0"/>
+                                <stop offset="30%" style="stop-color:#d0d0d0"/>
+                                <stop offset="35%" style="stop-color:#d5d5d5"/>
+                                <stop offset="50%" style="stop-color:#d0d0d0"/>
+                                <stop offset="100%" style="stop-color:#c0c0c0"/>
+                            </linearGradient>
+                            <filter id="shadow">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                                <feOffset dx="0" dy="2" result="offsetblur"/>
+                                <feComponentTransfer>
+                                    <feFuncA type="linear" slope="0.3"/>
+                                </feComponentTransfer>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M 10 0 L 0 35 L 0 115 L 20 115 L 20 35 Z" fill="url(#punchGrad)" filter="url(#shadow)"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="spacer"></div>
+        <div id="motor-container" style="display: flex; align-items: center; justify-content: center;">
+            <div class="knob-outer">
+                <div id="motor-group" class="knob-inner"></div>
+            </div>
+            <div id="output-bar-container" style="width: 4px; position: absolute; left: calc(50% + 48px); top: 0; bottom: 0;">
+                <div id="output-bar" style="width: 100%; background-color: #f44336; transition: height 0.1s; position: absolute; left: 0; right: 0;"></div>
+            </div>
+        </div>
+        <div class="spacer"></div>
+        <div id="chart-container">
+            <canvas id="chart-canvas"></canvas>
+        </div>
+    </div>
+
+    <div id="controls-left">
+        <div class="setpoint-knob-container">
+            <div class="setpoint-label">Setpoint</div>
+            <div class="knob" id="setpoint-knob">
+                <div class="knob-outer">
+                    <div class="knob-inner"></div>
+                </div>
+            </div>
+            <div class="setpoint-value" id="setpoint-value">0°</div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div class="toggle-switch" id="setpoint-toggle"></div>
+            <div class="switch-label">±180°</div>
+        </div>
+    </div>
+
+    <div id="onoff-wrapper">
+        <button id="motor-reset-btn" class="logbar-btn">Reset</button>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div class="toggle-switch" id="ylim-lock-toggle"></div>
+            <div class="switch-label" style="font-size: 11px;">Y-lim lock</div>
+        </div>
+        <div id="onoff-container">
+            <div class="toggle-switch toggle-switch-onoff active" id="onoff-toggle"></div>
+            <div class="switch-label">Off On</div>
+        </div>
+    </div>
+
+    <div id="controls-right">
+        <div class="knob-container">
+            <div class="knob-label">P</div>
+            <div class="knob" id="p-knob">
+                <div class="knob-outer">
+                    <div class="knob-inner"></div>
+                </div>
+            </div>
+            <input type="number" class="knob-value" id="p-value" step="0.001" value="0.000">
+        </div>
+        <div class="knob-container">
+            <div class="knob-label">I</div>
+            <div class="knob" id="i-knob">
+                <div class="knob-outer">
+                    <div class="knob-inner"></div>
+                </div>
+            </div>
+            <input type="number" class="knob-value" id="i-value" step="0.001" value="0.000">
+            <div id="integral-value" style="margin-top: 4px; font-size: 11px; color: #666; cursor: pointer; user-select: none;">∫ = 0.000</div>
+        </div>
+        <div class="knob-container">
+            <div class="knob-label">D</div>
+            <div class="knob" id="d-knob">
+                <div class="knob-outer">
+                    <div class="knob-inner"></div>
+                </div>
+            </div>
+            <input type="number" class="knob-value" id="d-value" step="0.001" value="0.000">
+        </div>
+    </div>
+
+    <!-- Moduły w kolejności zależności -->
+    <script src="js/parameters.js"></script>
+    <script>
+        // Ustaw domyślne wartości parametrów po załadowaniu parameters.js
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('param-k').value = DEFAULT_PARAMS.k;
+            document.getElementById('param-a').value = DEFAULT_PARAMS.a;
+            document.getElementById('param-b').value = DEFAULT_PARAMS.b;
+            document.getElementById('param-c').value = DEFAULT_PARAMS.c;
+            document.getElementById('param-Umin').value = DEFAULT_PARAMS.Umin;
+            document.getElementById('param-Umax').value = DEFAULT_PARAMS.Umax;
+        });
+    </script>
+    <script src="js/control/pid.js"></script>
+    <script src="js/control/simulation.js"></script>
+    <script src="js/control/manual_motor_control.js"></script>
+    <script src="js/dynamics/motor.js"></script>
+    <script src="js/dynamics/needle.js"></script>
+    <script src="js/chart/chart.js"></script>
+    <script src="js/ui/log.js"></script>
+    <script src="js/ui/toggle.js"></script>
+    <script src="js/ui/pid_output_bar.js"></script>
+    <script src="js/ui/knobs.js"></script>
+    <script src="js/ui/panels.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
