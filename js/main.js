@@ -104,4 +104,4 @@ setInterval(() => {
     simulation.setClampingEnabled(clampingToggle.isActive());
     simulation.setSaturationEnabled(saturationToggle.isActive());
     simulation.step();
-}, 10);
+}, 5);

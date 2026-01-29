@@ -30,6 +30,7 @@ class Simulation {
         if (this.run) {
             const angle = this.motor.getMotorAngle();
             const dt = this.calculateDt();
+            this.updateDtDisplay(dt);
             const u = this.pidController.compute(this.setpoint, angle, dt);
             if (this.needleLoad) this.motor.step_asymptotic(u, dt);
             else this.motor.step_nonasymptotic(u, dt);
@@ -68,6 +69,17 @@ class Simulation {
         if (integralElement) {
             integralElement.textContent = `∫ = ${integralValue.toFixed(3)}`;
         }
+    }
+
+    updateDtDisplay(dt) {
+        if (this.dtSamples === undefined) this.dtSamples = [];
+        this.dtSamples.push(dt);
+        if (this.dtSamples.length > 30) {
+            this.dtSamples.shift();
+        }
+        const averageDt = this.dtSamples.reduce((a, b) => a + b, 0) / this.dtSamples.length;
+        const dtElement = document.getElementById('dt-value');
+        if (dtElement) dtElement.textContent = `dt = ${averageDt.toFixed(3)}s`;
     }
     
     reset() {
