@@ -67,7 +67,8 @@ class Simulation {
         const integralValue = this.pidController.getIntegralValue();
         const integralElement = document.getElementById('integral-value');
         if (integralElement) {
-            integralElement.textContent = `∫ = ${integralValue.toFixed(3)}`;
+            integralElement.textContent = `∫ = ${integralValue.toFixed(2)}`;
+            integralElement.style.color = this.pidController.isIntegralSaturated() ? 'red' : '';
         }
     }
 

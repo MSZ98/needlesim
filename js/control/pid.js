@@ -14,26 +14,11 @@ class PIDController {
         this.updateParameters();
         let e = sp - pv;
         // console.log(dt);
-        let integralSaturation = false;
-
-        if (this.clampingEnabled) {
-            if (this.prev_out >= 1) integralSaturation = true;
-            else if (this.prev_out <= -1) integralSaturation = true;
-            else integralSaturation = false;
-        }
-
-        if (this.saturationEnabled) {
-            if (this.E > this.integralSaturationValue) {
-                integralSaturation = true;
-                this.E = this.integralSaturationValue;
-            }
-            else if (this.E < -this.integralSaturationValue) {
-                integralSaturation = true;
-                this.E = -this.integralSaturationValue;
-            }
-        }
         
-        if (!integralSaturation) this.E += e * dt;
+        if (this.clampingEnabled) this.performIntegrationWithClamping(e, dt);
+        else if (this.saturationEnabled) this.performIntegrationWithSaturation(e, dt);
+        else this.E += e * dt;
+
         const ep = (e - this.prev_e) / dt;
         let u = this.P * e + this.I * this.E + this.D * ep;
         
@@ -47,20 +32,53 @@ class PIDController {
         
         // Update previous values
         this.prev_e = e;
-        this.prev_out = out;
+        this.prev_u = u;
         
         return out;
     }
 
+    performIntegrationWithClamping(e, dt) {
+        let prev_E = this.E;
+        this.E += e * dt;
+        if (this.prev_u >= 1) {
+            this.integralSaturated = true;
+            this.E = prev_E;
+        }
+        else if (this.prev_u <= -1) {
+            this.integralSaturated = true;
+            this.E = prev_E;
+        }
+        else this.integralSaturated = false;
+    }
+
+    performIntegrationWithSaturation(e, dt) {
+        this.E += e * dt;
+        if (this.E > this.integralSaturationValue) {
+            this.integralSaturated = true;
+            this.E = this.integralSaturationValue;
+        }
+        else if (this.E < -this.integralSaturationValue) {
+            this.integralSaturated = true;
+            this.E = -this.integralSaturationValue;
+        }
+        else this.integralSaturated = false;
+    }
+
+    saturateIntegral() {
+        if (this.E > this.integralSaturationValue) this.E = this.integralSaturationValue;
+        else if (this.E < -this.integralSaturationValue) this.E = -this.integralSaturationValue;
+    }
+    
     initVariables() {
         this.prev_e = 0;
         this.E = 0;
         this.prev_e = 0;
-        this.prev_out = 0;
+        this.prev_u = 0;
         this.normalizedOutput = 0;
         this.clampingEnabled = false;
         this.saturationEnabled = false;
         this.integralSaturationValue = 0;
+        this.integralSaturated = false;
     }
 
     updateParameters() {
@@ -76,10 +94,15 @@ class PIDController {
         this.E = 0;
         this.prev_e = 0;
         this.prev_out = 0;
+        this.integralSaturated = false;
     }
     
     getIntegralValue() {
         return this.E;
+    }
+
+    isIntegralSaturated() {
+        return this.integralSaturated;
     }
     
     resetIntegral() {
