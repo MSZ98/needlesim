@@ -13,7 +13,7 @@ class PIDController {
         if (dt === 0) return 0;
         this.updateParameters();
         let e = sp - pv;
-        console.log(dt);
+        // console.log(dt);
         let integralSaturation = false;
 
         if (this.clampingEnabled) {

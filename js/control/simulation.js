@@ -98,7 +98,7 @@ class Simulation {
         this.Umin = readParam('param-Umin');
         this.Umax = readParam('param-Umax');
         this.integralSaturationValue = readParam('integral-saturation-value');
-        console.log(this.isClampingEnabled, this.isSaturationEnabled, this.integralSaturationValue);
+        // console.log(this.isClampingEnabled, this.isSaturationEnabled, this.integralSaturationValue);
     }
 
     initVariables() {
