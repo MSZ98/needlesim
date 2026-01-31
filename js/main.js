@@ -61,11 +61,11 @@ function updateFormula(isAsymptotic) {
     const formulaElement = document.querySelector('.params-formula-main');
     if (formulaElement) {
         if (isAsymptotic) {
-            // Asymptotic: Go(s) = k/(s(a·s² + b·s + c))
-            formulaElement.innerHTML = 'G<sub>o</sub>(s) = <span class="params-frac"><span class="params-num">k</span><span class="params-den">s(a·s² + b·s + c)</span></span>';
-        } else {
-            // Non-asymptotic: Go(s) = k/(a·s² + b·s + c)
+            // Asymptotic: Go(s) = k/(a·s² + b·s + c)
             formulaElement.innerHTML = 'G<sub>o</sub>(s) = <span class="params-frac"><span class="params-num">k</span><span class="params-den">a·s² + b·s + c</span></span>';
+        } else {
+            // Non-asymptotic: Go(s) = k/(s(a·s² + b·s + c))
+            formulaElement.innerHTML = 'G<sub>o</sub>(s) = <span class="params-frac"><span class="params-num">k</span><span class="params-den">s(a·s² + b·s + c)</span></span>';
         }
     }
 }
