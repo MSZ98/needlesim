@@ -34,6 +34,10 @@ class KnobController {
         this.knob.addEventListener('mousedown', this.onMouseDown.bind(this));
         document.addEventListener('mousemove', this.onMouseMove.bind(this));
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
+        this.knob.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
+        document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+        document.addEventListener('touchend', this.onTouchEnd.bind(this));
+        document.addEventListener('touchcancel', this.onTouchEnd.bind(this));
         this.knob.addEventListener('wheel', this.onWheel.bind(this));
         if (this.valueDisplay.tagName === 'INPUT') {
             this.valueDisplay.addEventListener('change', () => {
@@ -47,6 +51,16 @@ class KnobController {
         }
     }
 
+    getPointerCoords(e) {
+        if (e.touches && e.touches.length > 0) {
+            return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+        }
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+        }
+        return { clientX: e.clientX, clientY: e.clientY };
+    }
+
     onMouseDown(e) {
         this.isDragging = true;
         const coords = this.getCursorPolarCoordsFromMouseEvent(e);
@@ -54,6 +68,26 @@ class KnobController {
         this.knob.style.cursor = 'grabbing';
         this.prevCursorAngle = this.pressCursorAngle;
         e.preventDefault();
+    }
+
+    onTouchStart(e) {
+        if (e.touches.length !== 1) return;
+        e.preventDefault();
+        const syntheticEvent = this.getPointerCoords(e);
+        this.onMouseDown(syntheticEvent);
+    }
+
+    onTouchMove(e) {
+        if (!this.isDragging || e.touches.length !== 1) return;
+        e.preventDefault();
+        const syntheticEvent = this.getPointerCoords(e);
+        this.onMouseMove(syntheticEvent);
+    }
+
+    onTouchEnd(e) {
+        if (e.touches.length === 0) {
+            this.onMouseUp(e);
+        }
     }
 
     onMouseUp(e) {

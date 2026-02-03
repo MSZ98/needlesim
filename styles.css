@@ -353,6 +353,7 @@ input.knob-value {
     height: 80px;
     position: relative;
     cursor: pointer;
+    touch-action: none;
 }
 
 .knob-outer {
